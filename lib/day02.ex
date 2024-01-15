@@ -1,4 +1,12 @@
 defmodule Day02 do
+  @number_of_red 12
+  @number_of_green 13
+  @number_of_blue 14
+
+  defmodule GameSubset do
+    defstruct red: 0, green: 0, blue: 0
+  end
+
   defp parse_game(input_line) do
     [game_identification_string, cube_subsets_string | _] = input_line |> String.trim() |> String.split(":", trim: true)
 
@@ -6,13 +14,13 @@ defmodule Day02 do
     game_id = String.to_integer(game_id_string)
 
     game_subsets = String.split(cube_subsets_string, ";", trim: true) |> Enum.map(fn cube_subset_string ->
-      String.split(cube_subset_string, ",", trim: true) |> Enum.reduce(%{}, fn item, acc ->
+      String.split(cube_subset_string, ",", trim: true) |> Enum.reduce(%GameSubset{}, fn item, acc ->
         [amount_string, colour] = String.split(item, " ", trim: true)
         amount = String.to_integer(amount_string)
         case colour do
-          "red" -> Map.put(acc, :red, amount)
-          "green" -> Map.put(acc, :green, amount)
-          "blue" -> Map.put(acc, :blue, amount)
+          "red" -> %{acc | red: amount}
+          "green" -> %{acc | green: amount}
+          "blue" -> %{acc | blue: amount}
         end
       end)
     end)
@@ -21,15 +29,7 @@ defmodule Day02 do
   end
 
   defp game_subset_valid?(game_subset) do
-    filtered_game_subset = Map.filter(game_subset, fn ({key, value}) ->
-      case key do
-        :red when value > 12 -> true
-        :green when value > 13 -> true
-        :blue when value > 14 -> true
-        _ -> false
-      end
-    end)
-    filtered_game_subset |> Map.keys() == []
+    game_subset.red <= @number_of_red and game_subset.green <= @number_of_green and game_subset.blue <= @number_of_blue
   end
 
   defp game_round_power(game_subsets) do
@@ -39,7 +39,7 @@ defmodule Day02 do
                             max(amount_a, amount_b)
                           end)
                         end)
-    Map.get(minimum_amounts, :red, 1) * Map.get(minimum_amounts, :green, 1) * Map.get(minimum_amounts, :blue, 1)
+    minimum_amounts.red * minimum_amounts.green * minimum_amounts.blue
   end
 
   def first_star(input_stream) do
@@ -67,9 +67,3 @@ defmodule Day02 do
                  end)
   end
 end
-
-
-input_stream = File.stream!("inputs/day02.txt")
-IO.puts("First star: '#{Day02.first_star(input_stream)}'")
-input_stream = File.stream!("inputs/day02.txt")
-IO.puts("First star: '#{Day02.second_star(input_stream)}'")

@@ -24,9 +24,3 @@ defmodule Day01 do
                  |> first_star
   end
 end
-
-
-input_stream = File.stream!("inputs/day01.txt")
-IO.puts("First star: '#{Day01.first_star(input_stream)}'")
-input_stream = File.stream!("inputs/day01.txt")
-IO.puts("Second star: '#{Day01.second_star(input_stream)}'")
