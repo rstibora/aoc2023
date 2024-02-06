@@ -47,6 +47,29 @@ defmodule Day03 do
     end
   end
 
+  defp find_numbers_for_gears(engine_schematic, part_numbers) do
+    for {{line, ends}, starts} <- part_numbers, reduce: %{} do
+      numbers_per_gear ->
+        number = number_string_to_int(line, starts, ends, engine_schematic)
+        numbers_per_gear = for y <- [line - 1, line + 1], reduce: numbers_per_gear do
+          numbers_per_gear -> for x <- starts - 1..ends + 1, reduce: numbers_per_gear do
+            numbers_per_gear -> case Map.fetch(engine_schematic.data, {x, y}) do
+                                  {:ok, {:symbol, "*"}} -> Map.update(numbers_per_gear, {x, y}, [number], fn numbers -> [number | numbers] end)
+                                  _ -> numbers_per_gear
+            end
+          end
+        end
+        numbers_per_gear = case Map.fetch(engine_schematic.data, {starts - 1, line}) do
+          {:ok, {:symbol, "*"}} -> Map.update(numbers_per_gear, {starts - 1, line}, [number], fn numbers -> [number | numbers] end)
+          _ -> numbers_per_gear
+        end
+        case Map.fetch(engine_schematic.data, {ends + 1, line}) do
+          {:ok, {:symbol, "*"}} -> Map.update(numbers_per_gear, {ends + 1, line}, [number], fn numbers -> [number_string_to_int(line, starts, ends, engine_schematic) | numbers] end)
+          _ -> numbers_per_gear
+        end
+    end
+  end
+
   defp symbol_nearby?(starts, ends, line, engine_schematic) do
     # Check one line above and one below...
     for y <- [line - 1, line + 1], reduce: false do
@@ -78,5 +101,19 @@ defmodule Day03 do
     engine_schematic = input_stream |> parse_engine_schematic
     part_numbers = engine_schematic |> find_part_numbers
     sum_part_numbers_near_symbols(part_numbers, engine_schematic)
+  end
+
+  def second_star(input_stream) do
+    engine_schematic = input_stream |> parse_engine_schematic
+    part_numbers = engine_schematic |> find_part_numbers
+    numbers_for_gears = find_numbers_for_gears(engine_schematic, part_numbers)
+    numbers_for_gears |> Enum.reduce(0, fn {{_, _}, numbers}, acc ->
+        case length(numbers) do
+          2 ->
+            [a, b] = numbers
+            acc + (a * b)
+          _ -> acc
+        end
+      end)
   end
 end

@@ -3,6 +3,7 @@ defmodule Aoc2023 do
     day_string = "03"
 
     input_stream = File.stream!("inputs/day#{day_string}.txt")
-    Day03.first_star(input_stream)
+    # Day03.first_star(input_stream)
+    Day03.second_star(input_stream)
   end
 end
